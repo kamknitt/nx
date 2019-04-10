@@ -8,18 +8,23 @@ import {
   Tree
 } from '@angular-devkit/schematics';
 import { Schema } from './schema';
-import { addImportToModule, insert } from '../../utils/ast-utils';
+import {
+  addImportToModule,
+  insert,
+  updateJsonInTree
+} from '../../utils/ast-utils';
 import * as ts from 'typescript';
 import { insertImport } from '@schematics/angular/utility/ast-utils';
 import {
   NodePackageInstallTask,
   RepositoryInitializerTask
 } from '@angular-devkit/schematics/tasks';
+import { Framework } from '../../utils/frameworks';
+import { formatFiles } from '../../utils/rules/format-files';
+import { toFileName } from '../../utils/name-utils';
 
 export default function(options: Schema): Rule {
-  if (!options.directory) {
-    options.directory = options.name;
-  }
+  options = normalizeOptions(options);
 
   const workspaceOpts = { ...options, preset: undefined };
   return (host: Tree, context: SchematicContext) => {
@@ -27,7 +32,8 @@ export default function(options: Schema): Rule {
       schematic('workspace', workspaceOpts),
       createPreset(options),
       move('/', options.directory),
-      addTasks(options)
+      addTasks(options),
+      formatFiles()
     ])(Tree.empty(), context);
   };
 }
@@ -39,9 +45,40 @@ function createPreset(options: Schema): Rule {
     return chain([
       schematic(
         'application',
-        { name: options.name, style: options.style },
+        {
+          name: options.name,
+          style: options.style,
+          framework: Framework.Angular
+        },
         { interactive: false }
-      )
+      ),
+      setDefaultAppFramework(Framework.Angular)
+    ]);
+  } else if (options.preset === 'react') {
+    return chain([
+      schematic(
+        'application',
+        {
+          name: options.name,
+          style: options.style,
+          framework: Framework.React
+        },
+        { interactive: false }
+      ),
+      setDefaultAppFramework(Framework.React)
+    ]);
+  } else if (options.preset === 'web-components') {
+    return chain([
+      schematic(
+        'application',
+        {
+          name: options.name,
+          style: options.style,
+          framework: Framework.WebComponents
+        },
+        { interactive: false }
+      ),
+      setDefaultAppFramework(Framework.WebComponents)
     ]);
   } else {
     return chain([
@@ -63,6 +100,7 @@ function createPreset(options: Schema): Rule {
         { name: 'api-interface', framework: 'none' },
         { interactive: false }
       ),
+      setDefaultAppFramework(Framework.Angular),
       connectFrontendAndApi(options)
     ]);
   }
@@ -149,7 +187,7 @@ describe('AppComponent', () => {
       `<div style="text-align:center">
   <h1>Welcome to ${options.name}!</h1>
   <img
-    width="300"
+    width="450"
     src="https://raw.githubusercontent.com/nrwl/nx/master/nx-logo.png"
   />
 </div>
@@ -214,4 +252,28 @@ function addTasks(options: Schema) {
       );
     }
   };
+}
+
+function setDefaultAppFramework(framework: Framework) {
+  return updateJsonInTree('angular.json', json => {
+    if (!json.schematics) {
+      json.schematics = {};
+    }
+    if (!json.schematics['@nrwl/schematics:application']) {
+      json.schematics['@nrwl/schematics:application'] = {};
+    }
+    if (!json.schematics['@nrwl/schematics:application'].framework) {
+      json.schematics['@nrwl/schematics:application'].framework = framework;
+    }
+    return json;
+  });
+}
+
+function normalizeOptions(options: Schema): Schema {
+  options.name = toFileName(options.name);
+  if (!options.directory) {
+    options.directory = options.name;
+  }
+
+  return options;
 }

@@ -1,4 +1,4 @@
-<p align="center"><img src="https://raw.githubusercontent.com/nrwl/nx/master/nx-logo.png"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/nrwl/nx/master/nx-logo.png" width="450"></p>
 
 <div align="center">
 
@@ -14,13 +14,11 @@
 <hr>
 
 <p align="center">
-  <a href="https://hubs.ly/H0glYvV0" target="_blank">  
+  <a href="https://hubs.ly/H0g97pW0" target="_blank">  
     <img 
-         width="728" 
-         height="auto" 
-         src="https://images.ctfassets.net/8eyogtwep6d2/57vhB8tLvCaEk1DT920ZQR/aa4ad56598293930ac0314c97329c07b/connect-cypress.jpg?w=728" 
-         srcset="https://images.ctfassets.net/8eyogtwep6d2/57vhB8tLvCaEk1DT920ZQR/aa4ad56598293930ac0314c97329c07b/connect-cypress.jpg 2x" 
-         alt="Our Newest Nrwl Connect event">
+         width="728"
+         src="https://images.ctfassets.net/8eyogtwep6d2/40ASb6l6MR7V0w5ntqZ2yi/b4d439fcf56e50085d1f76df1bee41af/monorepo-banner-angularconsole.png"  
+         alt="Our Newest Enterprise Angular Book">
   </a>
 </p>
 
@@ -58,37 +56,25 @@ Nx **is not** a replacement for Angular CLI. **An Nx workspace is an Angular CLI
 
 # Getting Started
 
-## Creating an Nx Workspace Using Npx
+## Creating an Nx Workspace
 
-Using [Npx](https://medium.com/@maybekatz/introducing-npx-an-npm-package-runner-55f7d4bd282b) you can create a new Nx workspace without installing any packages.
-
-Simply run:
+**Using `npx`**
 
 ```bash
-npx -p @nrwl/schematics create-nx-workspace myworkspace
+npx create-nx-workspace myworkspace
 ```
 
-## Creating an Nx Workspace Without Npx
-
-Install `@nrwl/schematics`.
+**Using `npm init`**
 
 ```bash
-npm install -g @nrwl/schematics
+npm init nx-workspace myworkspace
 ```
 
-Then run:
+**Using `yarn create`**
 
 ```bash
-ng new myworkspace --collection=@nrw/schematics
+yarn create nx-workspace myworkspace
 ```
-
-The `ng new` command uses globally-installed packages. Anything installed globally can be in a messy state. If you have any problems running the command above, you can also run:
-
-```bash
-create-nx-workspace myworkspacename
-```
-
-This command still runs `ng new` under the hood, but it does it in a sandboxed environment, and, as a result, never fails.
 
 ## Adding Nx to an Existing Angular CLI workspace
 
@@ -171,7 +157,7 @@ You are good to go!
 
 ### Books
 
-- [Angular Enteprise Monorepo Patters](https://go.nrwl.io/angular-enterprise-monorepo-patterns-new-book?utm_campaign=Book%3A%20Monorepo%20Patterns%2C%20Jan%202019&utm_source=Github&utm_medium=Banner%20Ad)
+- [Angular Enterprise Monorepo Patterns](https://go.nrwl.io/angular-enterprise-monorepo-patterns-new-book?utm_campaign=Book%3A%20Monorepo%20Patterns%2C%20Jan%202019&utm_source=Github&utm_medium=Banner%20Ad)
 
 ### Videos
 

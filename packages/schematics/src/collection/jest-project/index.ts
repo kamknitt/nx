@@ -15,14 +15,18 @@ import {
 import {
   getProjectConfig,
   readJsonInTree,
-  updateJsonInTree
+  updateJsonInTree,
+  addDepsToPackageJson
 } from '../../utils/ast-utils';
 import { offsetFromRoot } from '../../utils/common';
 import { join, normalize } from '@angular-devkit/core';
+import { jestPresetAngularVersion, tsJestversion } from '../../lib-versions';
 
 export interface JestProjectSchema {
   project: string;
+  supportTsx: boolean;
   skipSetupFile: boolean;
+  setupFile: 'angular' | 'web-components' | 'none';
   skipSerializers: boolean;
 }
 
@@ -37,7 +41,7 @@ function generateFiles(options: JestProjectSchema): Rule {
           projectRoot: projectConfig.root,
           offsetFromRoot: offsetFromRoot(projectConfig.root)
         }),
-        options.skipSetupFile
+        options.setupFile === 'none'
           ? filter(file => file !== '/src/test-setup.ts')
           : noop(),
         move(projectConfig.root)
@@ -73,7 +77,7 @@ function updateAngularJson(options: JestProjectSchema): Rule {
         tsConfig: join(normalize(projectConfig.root), 'tsconfig.spec.json')
       }
     };
-    if (!options.skipSetupFile) {
+    if (options.setupFile !== 'none') {
       projectConfig.architect.test.options.setupFile = join(
         normalize(projectConfig.root),
         'src/test-setup.ts'
@@ -87,6 +91,16 @@ function updateAngularJson(options: JestProjectSchema): Rule {
     }
     return json;
   });
+}
+
+function addDependencies(options: JestProjectSchema): Rule {
+  const devDeps = {};
+  if (options.setupFile === 'angular') {
+    devDeps['jest-preset-angular'] = jestPresetAngularVersion;
+  } else {
+    devDeps['ts-jest'] = tsJestversion;
+  }
+  return addDepsToPackageJson({}, devDeps);
 }
 
 function check(options: JestProjectSchema): Rule {
@@ -104,9 +118,21 @@ function check(options: JestProjectSchema): Rule {
   };
 }
 
+function normalizeOptions(options: JestProjectSchema): JestProjectSchema {
+  if (!options.skipSetupFile) {
+    return options;
+  }
+  return {
+    ...options,
+    setupFile: 'none'
+  };
+}
+
 export default function(options: JestProjectSchema): Rule {
+  options = normalizeOptions(options);
   return chain([
     check(options),
+    addDependencies(options),
     generateFiles(options),
     updateTsConfig(options),
     updateAngularJson(options)

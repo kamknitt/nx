@@ -32,7 +32,8 @@ import { offsetFromRoot } from '../../utils/common';
 import {
   toClassName,
   toFileName,
-  toPropertyName
+  toPropertyName,
+  names
 } from '../../utils/name-utils';
 import {
   getNpmScope,
@@ -311,8 +312,9 @@ function updateProject(options: NormalizedSchema): Rule {
 
     return chain([
       mergeWith(
-        apply(url('./files'), [
+        apply(url('./files/lib'), [
           template({
+            ...options,
             offsetFromRoot: offsetFromRoot(options.projectRoot)
           }),
           move(options.projectRoot)
@@ -360,12 +362,17 @@ function updateProject(options: NormalizedSchema): Rule {
             outDir: `${offsetFromRoot(options.projectRoot)}dist/out-tsc/${
               options.projectRoot
             }`
-          }
+          },
+          angularCompilerOptions:
+            options.framework === Framework.Angular
+              ? json.angularCompilerOptions
+              : undefined
         };
       }),
       updateJsonInTree(`${options.projectRoot}/tslint.json`, json => {
         return {
           ...json,
+          rules: options.framework === Framework.Angular ? json.rules : [],
           extends: `${offsetFromRoot(options.projectRoot)}tslint.json`
         };
       }),
@@ -397,6 +404,33 @@ function updateTsConfig(options: NormalizedSchema): Rule {
       })(host, context);
     }
   ]);
+}
+
+function createAdditionalFiles(options: NormalizedSchema): Rule {
+  switch (options.framework) {
+    case Framework.React:
+      return chain([
+        mergeWith(
+          apply(url(`./files/${options.framework}`), [
+            template({
+              ...options,
+              tmpl: '',
+              ...names(options.name)
+            }),
+            move(options.projectRoot)
+          ])
+        ),
+        (host: Tree) => {
+          host.overwrite(
+            `${options.projectRoot}/src/index.ts`,
+            ` export * from './lib/${options.fileName}';\n`
+          );
+        }
+      ]);
+
+    default:
+      return noop();
+  }
 }
 
 function updateLibPackageNpmScope(options: NormalizedSchema): Rule {
@@ -443,10 +477,13 @@ export default function(schema: Schema): Rule {
       move(options.name, options.projectRoot),
       updateProject(options),
       updateTsConfig(options),
+      createAdditionalFiles(options),
       options.unitTestRunner === 'jest'
         ? schematic('jest-project', {
             project: options.name,
-            skipSetupFile: options.framework !== Framework.Angular,
+            setupFile:
+              options.framework === Framework.Angular ? 'angular' : 'none',
+            supportTsx: options.framework === Framework.React,
             skipSerializers: options.framework !== Framework.Angular
           })
         : noop(),

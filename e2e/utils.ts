@@ -1,5 +1,5 @@
 import { exec, execSync } from 'child_process';
-import { readFileSync, statSync, writeFileSync } from 'fs';
+import { readFileSync, statSync, writeFileSync, renameSync } from 'fs';
 import { ensureDirSync } from 'fs-extra';
 import * as path from 'path';
 
@@ -65,6 +65,8 @@ export function copyMissingPackages(): void {
     'angular',
     '@angular/upgrade',
     '@angular-devkit/build-ng-packagr',
+    'codelyzer',
+    'ngrx-store-freeze',
     'npm-run-all',
     'yargs',
     'yargs-parser',
@@ -74,6 +76,7 @@ export function copyMissingPackages(): void {
     'jest',
     '@types/jest',
     'jest-preset-angular',
+    'identity-obj-proxy',
     'karma',
     'karma-chrome-launcher',
     'karma-coverage-istanbul-reporter',
@@ -86,7 +89,15 @@ export function copyMissingPackages(): void {
     '@types/jasminewd2',
     '@nestjs',
     'express',
-    '@types/express'
+    '@types/express',
+
+    'react',
+    'react-dom',
+    '@types/react',
+    '@types/react-dom',
+    'react-testing-library',
+
+    'document-register-element'
   ];
   modulesToCopy.forEach(m => copyNodeModule(projectName, m));
   updateFile(
@@ -205,6 +216,14 @@ export function runCommand(command: string): string {
 export function updateFile(f: string, content: string): void {
   ensureDirSync(path.dirname(path.join(getCwd(), 'tmp', 'proj', f)));
   writeFileSync(path.join(getCwd(), 'tmp', 'proj', f), content);
+}
+
+export function renameFile(f: string, newPath: string): void {
+  ensureDirSync(path.dirname(path.join(getCwd(), 'tmp', 'proj', newPath)));
+  renameSync(
+    path.join(getCwd(), 'tmp', 'proj', f),
+    path.join(getCwd(), 'tmp', 'proj', newPath)
+  );
 }
 
 export function checkFilesExist(...expectedFiles: string[]) {

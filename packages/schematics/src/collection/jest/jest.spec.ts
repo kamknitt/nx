@@ -8,7 +8,7 @@ import {
 } from '../../utils/testing-utils';
 import { readJsonInTree } from '@nrwl/schematics/src/utils/ast-utils';
 
-describe('lib', () => {
+describe('jest', () => {
   let appTree: Tree;
 
   beforeEach(() => {
@@ -27,6 +27,5 @@ describe('lib', () => {
     expect(packageJson.devDependencies.jest).toBeDefined();
     expect(packageJson.devDependencies['@nrwl/builders']).toBeDefined();
     expect(packageJson.devDependencies['@types/jest']).toBeDefined();
-    expect(packageJson.devDependencies['jest-preset-angular']).toBeDefined();
   });
 });
